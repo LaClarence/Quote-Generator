@@ -9,8 +9,8 @@ https://www.makeuseof.com/css-background-gradients/
 
 :root {
   --gradient: linear-gradient(45deg,
-      #845ec2,
-      #d65db1,
+      #5e75c2,
+      #1b2d9d,
       #ff6f91,
       #ff9671,
       #ffc75f,
@@ -30,7 +30,7 @@ body {
   background-size: 400%;
   background-image: var(--gradient);
   /* background-image: linear-gradient(to right, #b6fbff, #83a4d4); */
-  animation: bg-animation 35s infinite;
+  animation: bg-animation 120s infinite;
 
   font-family: 'Amaranth', sans-serif;
   font-weight: 300;

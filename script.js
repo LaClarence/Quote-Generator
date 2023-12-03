@@ -6,32 +6,23 @@ const translateBtn = document.getElementById('translate');
 const newQuoteBtn = document.getElementById('new-quote');
 const loader = document.getElementById('loader');
 
-// There is an alternative option for this project 
-// that does not require an API key - https://zenquotes.io/
-// Sample Requests
-// https://zenquotes.io/api/quotes - Generate a JSON array of 50 random quotes on each request
-// https://zenquotes.io/api/today - Generate the quote of the day on each request
-// https://zenquotes.io/api/random - Generate a random quote on each request
-
+const sourceLangQuotes = 'en';
+let targetLangQuotes = 'en';
 let quotes = [];
 
-// Show loading
-function loading() {
+function showLoadingSpinner() {
   loader.hidden = false;
   quoteGenerator.hidden = true;
 }
 
-// Hide loading
-function loaded() {
+function removeLoadingSpinner() {
   quoteGenerator.hidden = false;
   loader.hidden = true;
 }
 
-// Show new quote
-function newQuote() {
-  loading();
+function showNewQuoteAmongQuotes() {
+  showLoadingSpinner();
   const quote = quotes[Math.floor(Math.random() * quotes.length)];
-  // console.log(quote);
   authorText.textContent = !quote.author ? 'Unknow' : quote.author;
   if (quote.text.length > 120) {
     quoteText.classList.add('long-quote')
@@ -39,12 +30,11 @@ function newQuote() {
     quoteText.classList.remove('long-quote')
   }
   quoteText.textContent = quote.text;
-  loaded();
+  removeLoadingSpinner();
 }
 
-// Get Quotes From API
-async function getQuotes() {
-  loading();
+async function loadQuotesFromAPI() {
+  showLoadingSpinner();
   const apiUrl = 'https://jacintodesign.github.io/quotes-api/data/quotes.json';
   try {
     const response = await fetch(apiUrl);
@@ -53,33 +43,33 @@ async function getQuotes() {
     alert("Failed to load quotes from API: " + error);
     quotes = localQuotes;
   }
-  newQuote();
+  //removeLoadingSpinner();
+  showNewQuoteAmongQuotes();
 }
 
-// Translate Quote
-// Thanks to https://codepen.io/junior-abd-almaged/pen/gQEbRv
+function initializeLangForTranslateBtn() {
+  targetLangQuotes = navigator.language.substring(0, 2);
+  translateBtn.hidden = sourceLangQuotes === targetLangQuotes;
+}
+
 async function translateQuote() {
+  // Thanks to https://codepen.io/junior-abd-almaged/pen/gQEbRv
   var sourceText = quoteText.textContent;
-  var sourceLang = 'en';
-  var targetLang = navigator.language.substring(0, 2);
-
-  const translateUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sourceLang + "&tl=" + targetLang + "&dt=t&q=" + encodeURI(sourceText);
-
+  const translateUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sourceLangQuotes + "&tl=" + targetLangQuotes + "&dt=t&q=" + encodeURI(sourceText);
   try {
     const response = await fetch(translateUrl);
-    loading();
-    translated = await response.json();
-    quoteText.textContent = translated[0][0][0];
+    showLoadingSpinner();
+    const translated = await response.json();
+    quoteText.textContent = translated[0].reduce((acc, line) => acc + line[0], '',);
   } catch (error) {
     console.log("Failed to translate quote: " + error);
   }
-  loaded();
+  removeLoadingSpinner();
 }
 
-// Event Listeners
-newQuoteBtn.addEventListener('click', newQuote);
+newQuoteBtn.addEventListener('click', showNewQuoteAmongQuotes);
 translateBtn.addEventListener('click', translateQuote);
 
-//On load
-getQuotes();
+initializeLangForTranslateBtn();
+loadQuotesFromAPI();
 
