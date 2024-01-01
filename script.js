@@ -8,6 +8,9 @@ const loader = document.getElementById('loader');
 
 const sourceLangQuotes = 'en';
 let targetLangQuotes = 'en';
+let sourceLangText = '';
+let targetLangtext = '';
+let isTranslated = false;
 let quotes = [];
 
 function showLoadingSpinner() {
@@ -53,16 +56,28 @@ function initializeLangForTranslateBtn() {
 }
 
 async function translateQuote() {
-  // Thanks to https://codepen.io/junior-abd-almaged/pen/gQEbRv
-  var sourceText = quoteText.textContent;
-  const translateUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sourceLangQuotes + "&tl=" + targetLangQuotes + "&dt=t&q=" + encodeURI(sourceText);
-  try {
-    const response = await fetch(translateUrl);
-    showLoadingSpinner();
-    const translated = await response.json();
-    quoteText.textContent = translated[0].reduce((acc, line) => acc + line[0], '',);
-  } catch (error) {
-    console.log("Failed to translate quote: " + error);
+  if (isTranslated) {
+    quoteText.textContent = sourceLangText;
+    isTranslated = false;
+  } else {
+    if (sourceLangText === quoteText.textContent) {
+      quoteText.textContent = targetLangtext;
+    } else {
+      // Thanks to https://codepen.io/junior-abd-almaged/pen/gQEbRv
+      sourceLangText = quoteText.textContent;
+      const translateUrl = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=" + sourceLangQuotes + "&tl=" + targetLangQuotes + "&dt=t&q=" + encodeURI(sourceLangText);
+      try {
+        const response = await fetch(translateUrl);
+        showLoadingSpinner();
+        const translated = await response.json();
+        targetLangtext = translated[0].reduce((acc, line) => acc + line[0], '',);
+        quoteText.textContent = targetLangtext;
+
+      } catch (error) {
+        alert("Failed to translate quote: " + error);
+      }
+    }
+    isTranslated = true;
   }
   removeLoadingSpinner();
 }
